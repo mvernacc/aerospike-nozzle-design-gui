@@ -3,6 +3,7 @@ Aerospike Nozzle Design GUI
 
 Graphical software for designing aerospike rocket nozzles.
 
+
 Usage
 -----
 Run the software with the following terminal command:
@@ -27,3 +28,8 @@ sudo apt-get install python python-numpy python-scipy python-tk python-matplotli
 ```
 
 On Windows 7 I have tested [WinPython](https://winpython.github.io/), although other python distributions might work.
+
+
+Solver
+------
+The nozzle design solver is based on an algorithm developed by C.C. Lee for NASA’s Marshal Space Flight Center. A description and derivation of the algorithm may be found in [Spike Contour Algorithm.docx](Spike Contour Algorithm.docx).
