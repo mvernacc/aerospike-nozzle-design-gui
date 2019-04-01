@@ -105,7 +105,7 @@ class NozzleSolver:
         self.M = np.linspace(1, Me, self.N)
         # the Isp due to momentum flux and pressure at the throat [sec]
         self.Isp[0] = vt*sin(self.delta)*( 1 + 1/y*(1-((y+1)/2)**(y/(y-1))*Pa/params.Pc) ) / g
-        for x in xrange(self.N):
+        for x in range(self.N):
             self.mu[x] = asin( 1/self.M[x] ) # See Lozano's Fall2012 Lec17 Notes
             # use the Prandtl-Meyer equation to find nu[x]
             self.nu[x] = ((y+1)/(y-1))**0.5 * atan( ((y-1)/(y+1)*(self.M[x]**2-1))**0.5 ) \
@@ -178,9 +178,7 @@ class NozzleSolver:
         plt.subplot(2,3,2)
         plt.cla()
         plt.plot( self.X, self.P/1.0e6)
-        plt.hold(True)
         plt.plot( self.X, np.ones((self.N,))*self.Pa/1.0e6, 'r' )
-        plt.hold(False)
         plt.ylabel('Pressure [MPa]')
         plt.grid(True)
         
@@ -229,7 +227,7 @@ def get_Mach( params ):
     X[0] = (u*k)**(B/(1-B))
     M[0] = X[0]
 
-    for i in xrange(1,n):
+    for i in range(1,n):
         lamb = 1/( 2*M[i-1]**(2/B)*(B-2) + M[i-1]**2 *B**2*k**2*u**2 )
         X[i] = lamb*M[i-1]*B*( M[i-1]**(2/B) - M[i-1]**2*B*k**2*u**2 \
             + ( M[i-1]**(2+2/B)*k**2*u**2*(B**2-4*B+4) \
