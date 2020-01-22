@@ -16,7 +16,7 @@ The GUI provides fields for entering the perameters of your propulsion system (e
 
 You may save and load the inputs parameters with the "Save Design" and "Load Design" buttons.
 
-You may export the nozzle geometry to a list of points in a text file with the "Export Spike+Shroud Shape to CAD" button.  The points text file can then be imported into SolidWorks CAD software. See [this tutorial](https://grabcad.com/questions/tutorial-how-to-import-points-to-solidworks-from-a-text-file) for details.
+You may export the nozzle geometry to a list of points in a text file with the "Export Spike+Shroud Shape to CAD" button.  The points text file can then be imported into SolidWorks CAD software. In SolidWorks, use the "Insert > Curve > Curve Through XYZ Points ..." command. Then revolve the curve around the y axis.
 
 
 Installation
