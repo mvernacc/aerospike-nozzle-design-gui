@@ -36,10 +36,10 @@ class NozzleSolver:
         # the mach numbers to examine
         self.M = np.zeros((self.N,))
         # the radius of the plug at some point x, normalized by the outer radius
-        self.RxRe = np.zeros((self.N,))
+        self.Rx_over_Re = np.zeros((self.N,))
         # The axial distance from the lip to point x, normalized by the outer
         # radius
-        self.X = np.zeros((self.N,))
+        self.X_over_Re = np.zeros((self.N,))
         # The flow velocity to mach wave angle [rad]
         self.mu = np.zeros((self.N,))
         # the turning angle [rad]
@@ -119,16 +119,26 @@ class NozzleSolver:
             RxRe2 = ( 1 - ( 2/(y+1)*(1+(y-1)/2*self.M[x]**2))**((y+1)/(2*y-2)) \
                 * sin( nu_e - self.nu[x] + self.mu[x] ) / params.er )
             if RxRe2 > 0:
-                self.RxRe[x] = RxRe2**0.5
-            else: self.RxRe[x] = 0
-            # find the X (axial) coordinate of the point. CC Lee Eqn (19)
-            self.X[x] = (1 - self.RxRe[x]) / tan( nu_e - self.nu[x] + self.mu[x] )
+                self.Rx_over_Re[x] = RxRe2**0.5
+            else: self.Rx_over_Re[x] = 0
+            # Compute the phi angle for the point. See CC Lee Fig 2 for the definition of
+            # the phi angle.
+            phi_x = nu_e - self.nu[x] + self.mu[x]
+            # Find the X (axial) coordinate of the point.
+            # This uses a re-arrangement of CC Lee Eqn (19). Lee's Eqn (19) is:
+            #   tan(phi_x) = (R_e - R_x) / X_x
+            # Solve for X_x:
+            #   X_x = (R_e - R_x) / tan()
+            # Then divide both sides by R_e:
+            #   X_x / R_e = (1 - R_x / R_e) / tan(phi)
+            # Note that X_over_Re[x] is (X_x / R_e) and Rx_over_Re[x] is (R_x / R_e).
+            self.X_over_Re[x] = (1 - self.Rx_over_Re[x]) / tan( phi_x )
             # find the pressure
             self.P[x] = params.Pc * (1 + (y-1)/2*self.M[x]**2)**(-y/(y-1))
             if x > 0:
                 self.Isp[x] = self.Isp[x-1] + ( vt/y*((y+1)/2)**(y/(y-1)) * \
                     params.er/2 * ( (self.P[x-1]-Pa)/params.Pc + (self.P[x]-Pa)/params.Pc ) * \
-                    (self.RxRe[x-1]**2 - self.RxRe[x]**2) ) / g
+                    (self.Rx_over_Re[x-1]**2 - self.Rx_over_Re[x]**2) ) / g
             #find the temperature
             self.T[x] = params.Tc / (1+ (y-1)/2 * self.M[x]**2)
         # throat width [meter]
@@ -207,19 +217,19 @@ class NozzleSolver:
 
         color = 'tab:blue'
 
-        self.axes['radius'].plot( self.X, self.RxRe, color=color )
+        self.axes['radius'].plot( self.X_over_Re, self.Rx_over_Re, color=color )
   
-        self.axes['Mach'].plot( self.X, self.M, color=color )
+        self.axes['Mach'].plot( self.X_over_Re, self.M, color=color )
         
  
-        self.axes['pressure'].plot( self.X, self.P/1.0e6, color=color)
-        self.axes['pressure'].plot( self.X, np.ones((self.N,))*self.Pa/1.0e6, 'r' )
+        self.axes['pressure'].plot( self.X_over_Re, self.P/1.0e6, color=color)
+        self.axes['pressure'].plot( self.X_over_Re, np.ones((self.N,))*self.Pa/1.0e6, 'r' )
 
-        self.axes['temperature'].plot( self.X, self.T, color=color )
+        self.axes['temperature'].plot( self.X_over_Re, self.T, color=color )
 
         
 
-        self.axes['Isp'].plot( self.X, self.Isp, color=color )
+        self.axes['Isp'].plot( self.X_over_Re, self.Isp, color=color )
 
         self.axes['text'].text(0.1,0.8, r'$A_e/A_t$ = %.1f'%(self.last_params.er))
         self.axes['text'].text(0.1,0.7, r'$P_c =$ %.2f MPa'%(self.last_params.Pc/1e6))
