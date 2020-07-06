@@ -7,6 +7,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from collections import namedtuple
 
+plt.ion()
+
 ### Warning logging ###
 import logging
 formatter = logging.Formatter('%(levelname)s {%(pathname)s:%(lineno)d}: %(message)s')
@@ -64,6 +66,9 @@ class NozzleSolver:
         self.Cf = 0
         self.last_params = zero_params
         self.results_string = ''
+
+        # Figure and axes for plotting
+        self.set_up_plot()
 
     def solve(self, params, Pa):
         ''' Solve for the spike contour and nozzle conditions given the engine parameters.
@@ -158,53 +163,73 @@ class NozzleSolver:
         + '\n' + '\tExit Mach number,    Me = %.2f'%(Me) \
         + '\n' + '\tThrust coefficient,  Cf = %.2f'%(self.Cf)
         return
-        
+
+    def set_up_plot(self):
+        '''Set up the figure and axes for plotting.'''
+        self.fig, axes = plt.subplots(nrows=2, ncols=3, figsize=(10, 6))
+        self.axes = {
+            'radius': axes[0][0],
+            'pressure': axes[0][1],
+            'Isp': axes[0][2],
+            'Mach': axes[1][0],
+            'temperature': axes[1][1],
+            'text': axes[1][2],
+        }
+        self.axes['radius'].set_ylabel('$R_x / R_e$ [-]')
+        self.axes['radius'].grid(True)
+
+        self.axes['pressure'].set_ylabel('Pressure [MPa]')
+        self.axes['pressure'].grid(True)
+
+        self.axes['Isp'].set_ylabel(r'Cumulative $I_{sp}$ [s]')
+        self.axes['Isp'].set_xlabel(r'$X_x \, / \, R_e$')
+        self.axes['Isp'].grid(True)
+
+        self.axes['Mach'].set_ylabel('Mach Number [-]')
+        self.axes['Mach'].set_xlabel(r'$X_x \, / \, R_e$')
+        self.axes['Mach'].grid(True)
+
+        self.axes['temperature'].set_ylabel('Temperature [K]')
+        self.axes['temperature'].set_xlabel(r'$X_x \, / \, R_e$')
+        self.axes['temperature'].grid(True)
+
+        self.fig.suptitle(
+            'Simulated Nozzle Conditions vs Axial Distance from Throat Normalized by Exit Radius')
+
+        self.fig.tight_layout()
+        self.fig.subplots_adjust(top=0.93)
+
     def plot(self):
         '''Plot the current solution results for the nozzle conditions.'''
-        plt.suptitle('Simulated Nozzle Conditions vs Axial Distance from Throat Normalized by Exit Radius')
-        plt.subplot(2,3,1)
-        plt.cla()
-        plt.plot( self.X, self.RxRe )
-        plt.ylabel('Rx / Re')
-        plt.grid(True)
-        
-        plt.subplot(2,3,4)
-        plt.cla()
-        plt.plot( self.X, self.M )
-        plt.ylabel( 'Mach Number')
-        plt.xlabel('Xx / Re')
-        plt.grid(True)
-        
-        plt.subplot(2,3,2)
-        plt.cla()
-        plt.plot( self.X, self.P/1.0e6)
-        plt.plot( self.X, np.ones((self.N,))*self.Pa/1.0e6, 'r' )
-        plt.ylabel('Pressure [MPa]')
-        plt.grid(True)
-        
-        plt.subplot(2,3,5)
-        plt.cla()
-        plt.plot( self.X, self.T )
-        plt.ylabel('Temperature [K]')
-        plt.xlabel('Xx / Re')
-        plt.grid(True)
-        
-        plt.subplot(2,3,3)
-        plt.cla()
-        plt.plot( self.X, self.Isp )
-        plt.ylabel(r'Cumulative $I_{sp}$')
-        plt.xlabel('Xx / Re')
-        plt.grid(True)
-        
-        plt.subplot(2,3,6)
-        plt.cla()
-        plt.text(0.1,0.8, r'$A_e/A_t$ = %.1f'%(self.last_params.er))
-        plt.text(0.1,0.7, r'$P_c =$ %.2f MPa'%(self.last_params.Pc/1e6))
-        plt.text(0.1,0.6, r'$T_c =$ %.0f K'%(self.last_params.Tc))
-        plt.text(0.1,0.5, r'$M_{molar} =$ %.1f g mol^-1'%(self.last_params.molar_m))
-        plt.text(0.1,0.4, r'$\gamma =$ %.2f'%(self.last_params.gamma))
+        for name, ax in self.axes.items():
+            for artist in ax.lines + ax.texts:
+                artist.remove()
 
-        plt.show(block=False)
+        color = 'tab:blue'
+
+        self.axes['radius'].plot( self.X, self.RxRe, color=color )
+  
+        self.axes['Mach'].plot( self.X, self.M, color=color )
+        
+ 
+        self.axes['pressure'].plot( self.X, self.P/1.0e6, color=color)
+        self.axes['pressure'].plot( self.X, np.ones((self.N,))*self.Pa/1.0e6, 'r' )
+
+        self.axes['temperature'].plot( self.X, self.T, color=color )
+
+        
+
+        self.axes['Isp'].plot( self.X, self.Isp, color=color )
+
+        self.axes['text'].text(0.1,0.8, r'$A_e/A_t$ = %.1f'%(self.last_params.er))
+        self.axes['text'].text(0.1,0.7, r'$P_c =$ %.2f MPa'%(self.last_params.Pc/1e6))
+        self.axes['text'].text(0.1,0.6, r'$T_c =$ %.0f K'%(self.last_params.Tc))
+        self.axes['text'].text(0.1,0.5, r'$M_{molar} =$ %.1f g mol^-1'%(self.last_params.molar_m))
+        self.axes['text'].text(0.1,0.4, r'$\gamma =$ %.2f'%(self.last_params.gamma))
+
+        plt.show()
+        plt.pause(0.01)
+
 ### Utility Thermofluids Functions ###
 def get_Mach( params ):
     '''
