@@ -398,7 +398,7 @@ class NozzleGUI(tk.Tk):
         #try:
         f = open(file_name+'_spike_curve.txt', 'w')
         for x in range(self.ns.N):
-            f.write('%.4f,%.4f,%.4f\r\n'%(0, self.ns.X[x]*self.params.Re*-1000, self.ns.RxRe[x]*self.params.Re*1000))
+            f.write('%.4f,%.4f,%.4f\r\n'%(0, self.ns.X_over_Re[x]*self.params.Re*-1000, self.ns.Rx_over_Re[x]*self.params.Re*1000))
         f.close()
         f = open(file_name+'_shroud_curve.txt', 'w')
         for r in np.arange(0, 0.003, 0.0001):
